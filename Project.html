@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head >
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>اپ مدیریت پروژه حرفه‌ای</title>
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css');
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Vazir', Tahoma, sans-serif;
+    background: #121212;
+    color: #eee;
+    margin: 0; padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  header {
+    background: #1f1f1f;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    text-align: center;
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    color: #f0f0f0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.7);
+  }
+  main {
+    flex: 1;
+    max-width: 1100px;
+    width: 95%;
+    margin: 1rem auto 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  form {
+    background: #222;
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+    box-shadow: 0 0 8px #00a8ff55;
+  }
+  form input[type=text], form input[type=number], form select {
+    background: #333;
+    border: none;
+    outline: none;
+    padding: 0.7rem 1rem;
+    border-radius: 6px;
+    color: #eee;
+    font-size: 1rem;
+    min-width: 140px;
+    transition: background-color 0.3s ease;
+  }
+  form input[type=text]:focus,
+  form input[type=number]:focus,
+  form select:focus {
+    background: #444;
+  }
+  form button {
+    background: #00a8ff;
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.7rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    min-width: 100px;
+  }
+  form button:hover {
+    background: #0090dd;
+  }
+
+  /* وضعیت فیلتر */
+  .filters {
+    background: #222;
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+    box-shadow: 0 0 6px #00a8ff55;
+  }
+  .filters select, .filters input[type=search] {
+    background: #333;
+    border: none;
+    outline: none;
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    color: #eee;
+    font-size: 1rem;
+    min-width: 150px;
+  }
+  .filters input[type=search] {
+    flex: 1;
+    min-width: 200px;
+  }
+  .filters select:focus,
+  .filters input[type=search]:focus {
+    background: #444;
+  }
+
+  /* ستون‌ها */
+  .columns {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  .column {
+    background: #222;
+    flex: 1;
+    min-width: 280px;
+    max-width: 350px;
+    border-radius: 10px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 10px #00a8ff33;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  .column h3 {
+    margin: 0 0 0.8rem;
+    font-weight: 700;
+    color: #00a8ff;
+    text-align: center;
+    border-bottom: 2px solid #00a8ff88;
+    padding-bottom: 0.3rem;
+  }
+
+  /* کارت پروژه */
+  .task {
+    background: #333;
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+    margin-bottom: 0.8rem;
+    box-shadow: 0 1px 4px #0008;
+    color: #eee;
+    display: flex;
+    flex-direction: column;
+    cursor: grab;
+    user-select: none;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+  }
+  .task.dragging {
+    opacity: 0.7;
+    cursor: grabbing;
+    box-shadow: 0 0 12px #00a8ffcc;
+  }
+  .task:hover {
+    background: #3a3a3a;
+    box-shadow: 0 0 15px #00a8ffcc;
+  }
+
+  .task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .task-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    flex: 1;
+    padding-right: 0.6rem;
+    word-break: break-word;
+  }
+  .task-title[contenteditable="true"] {
+    outline: 2px solid #00a8ff;
+    border-radius: 4px;
+    background: #444;
+  }
+  .task-price {
+    font-weight: 700;
+    min-width: 60px;
+    text-align: left;
+    direction: ltr;
+    color: #4cd137;
+    user-select: none;
+  }
+  .task-price[contenteditable="true"] {
+    outline: 2px solid #4cd137;
+    background: #2c2c2c;
+    border-radius: 4px;
+  }
+
+  .task-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+    justify-content: flex-end;
+  }
+  .task-buttons button {
+    border: none;
+    background: transparent;
+    color: #bbb;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.25s ease;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+  }
+  .task-buttons button:hover {
+    color: #00a8ff;
+  }
+
+  /* وضعیت اولویت */
+  .priority-low {
+    border-left: 5px solid #718093;
+  }
+  .priority-medium {
+    border-left: 5px solid #e1b12c;
+  }
+  .priority-high {
+    border-left: 5px solid #e84118;
+  }
+
+  /* دکمه ویرایش وضعیت */
+  .status-select {
+    margin-top: 0.6rem;
+    background: #222;
+    border-radius: 6px;
+    padding: 0.3rem 0.5rem;
+    color: #eee;
+    font-size: 0.9rem;
+    width: 100%;
+    border: 1px solid #555;
+    cursor: pointer;
+    user-select: none;
+  }
+  .status-select:hover {
+    border-color: #00a8ff;
+  }
+
+  /* اسکروول داخل ستون */
+  .column::-webkit-scrollbar {
+    width: 7px;
+  }
+  .column::-webkit-scrollbar-track {
+    background: #1b1b1b;
+    border-radius: 10px;
+  }
+  .column::-webkit-scrollbar-thumb {
+    background: #00a8ff88;
+    border-radius: 10px;
+  }
+
+  /* بخش آمار */
+  .stats {
+    background: #222;
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin-top: 0.8rem;
+    color: #eee;
+    box-shadow: 0 0 8px #00a8ff55;
+    display: flex;
+    gap: 1.3rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .stats div {
+    font-weight: 600;
+    min-width: 120px;
+    text-align: center;
+    font-size: 1rem;
+  }
+
+  /* ریسپانسیو */
+  @media (max-width: 800px) {
+    .columns {
+      flex-direction: column;
+      max-height: 70vh;
+    }
+    .column {
+      max-width: 100%;
+      max-height: 35vh;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>اپ مدیریت پروژه حرفه‌ای</header>
+
+<main>
+  <form id="addTaskForm" autocomplete="off" spellcheck="false" aria-label="فرم اضافه کردن پروژه جدید">
+    <input type="text" id="taskTitle" placeholder="عنوان پروژه..." required aria-required="true" />
+    <select id="taskPriority" aria-label="انتخاب اولویت پروژه" required>
+      <option value="" disabled selected>اولویت...</option>
+      <option value="low">کم</option>
+      <option value="medium">متوسط</option>
+      <option value="high">زیاد</option>
+    </select>
+    <input type="number" id="taskPrice" placeholder="قیمت (تومان)" min="0" step="1000" aria-label="قیمت پروژه" />
+    <select id="taskStatus" aria-label="وضعیت پروژه" required>
+      <option value="" disabled selected>وضعیت...</option>
+      <option value="todo"> لیست پروژه ها</option>
+      <option value="inprogress">در حال انجام</option>
+      <option value="done">تحویل داده شده</option>
+    </select>
+    <button type="submit" aria-label="اضافه کردن پروژه">افزودن</button>
+  </form>
+
+  <section class="filters" aria-label="فیلترها و جستجو">
+    <select id="filterStatus" aria-label="فیلتر وضعیت پروژه">
+      <option value="all">همه وضعیت‌ها</option>
+      <option value="todo"> لیست  پروزه ها</option>
+      <option value="inprogress">در حال انجام</option>
+      <option value="done">تحویل داده شده</option>
+    </select>
+
+    <select id="filterPriority" aria-label="فیلتر اولویت پروژه">
+      <option value="all">همه اولویت‌ها</option>
+      <option value="low">کم</option>
+      <option value="medium">متوسط</option>
+      <option value="high">زیاد</option>
+    </select>
+
+    <input type="search" id="searchBox" placeholder="جستجو در عنوان..." aria-label="جستجوی پروژه" />
+  </section>
+
+  <section class="columns" aria-label="ستون‌های پروژه‌ها">
+    <div id="todoColumn" class="column" aria-live="polite" aria-label="پروژه‌های  لیست پروزه ها">
+      <h3> لیست پروژه ها</h3>
+    </div>
+    <div id="inprogressColumn" class="column" aria-live="polite" aria-label="پروژه‌های در حال انجام">
+      <h3>در حال انجام</h3>
+    </div>
+    <div id="doneColumn" class="column" aria-live="polite" aria-label="پروژه‌های تحویل داد شده">
+      <h3>تحویل داده شده</h3>
+    </div>
+  </section>
+
+  <section class="stats" aria-label="آمار پروژه‌ها">
+    <div>کل پروژه‌ها: <span id="totalCount">0</span></div>
+    <div>در لیست پروژه ها: <span id="countTodo">0</span></div>
+    <div>در حال انجام: <span id="countInProgress">0</span></div>
+    <div>تحویل داده شده: <span id="countDone">0</span></div>
+    <div>جمع قیمت کل: <span id="totalPrice">0</span> تومان</div>
+  </section>
+</main>
+
+<script>
+  'use strict';
+
+  const addTaskForm = document.getElementById('addTaskForm');
+  const taskTitleInput = document.getElementById('taskTitle');
+  const taskPrioritySelect = document.getElementById('taskPriority');
+  const taskPriceInput = document.getElementById('taskPrice');
+  const taskStatusSelect = document.getElementById('taskStatus');
+
+  const filterStatus = document.getElementById('filterStatus');
+  const filterPriority = document.getElementById('filterPriority');
+  const searchBox = document.getElementById('searchBox');
+
+  const todoColumn = document.getElementById('todoColumn');
+  const inprogressColumn = document.getElementById('inprogressColumn');
+  const doneColumn = document.getElementById('doneColumn');
+
+  const totalCount = document.getElementById('totalCount');
+  const countTodo = document.getElementById('countTodo');
+  const countInProgress = document.getElementById('countInProgress');
+  const countDone = document.getElementById('countDone');
+  const totalPrice = document.getElementById('totalPrice');
+
+  let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+  function saveTasks() {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }
+
+  // ساخت کارت تسک
+  function createTaskElement(task) {
+    const taskDiv = document.createElement('div');
+    taskDiv.className = `task priority-${task.priority}`;
+    taskDiv.draggable = true;
+    taskDiv.dataset.id = task.id;
+
+    // هدر با عنوان و قیمت
+    const header = document.createElement('div');
+    header.className = 'task-header';
+
+    const title = document.createElement('div');
+    title.className = 'task-title';
+    title.textContent = task.title;
+    title.title = 'دابل کلیک برای ویرایش';
+    title.contentEditable = false;
+    title.spellcheck = false;
+
+    // فعال کردن ویرایش عنوان با دابل کلیک
+    title.addEventListener('dblclick', () => {
+      title.contentEditable = true;
+      title.focus();
+    });
+    title.addEventListener('blur', () => {
+      title.contentEditable = false;
+      if(title.textContent.trim() === '') {
+        alert('عنوان پروژه نمی‌تواند خالی باشد!');
+        title.textContent = task.title;
+        return;
+      }
+      task.title = title.textContent.trim();
+      saveTasks();
+      renderTasks();
+    });
+    title.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter') {
+        e.preventDefault();
+        title.blur();
+      }
+    });
+
+    const price = document.createElement('div');
+    price.className = 'task-price';
+    price.textContent = task.price.toLocaleString() + ' تومان';
+    price.title = 'دابل کلیک برای ویرایش قیمت';
+    price.contentEditable = false;
+    price.spellcheck = false;
+
+    price.addEventListener('dblclick', () => {
+      price.contentEditable = true;
+      price.focus();
+    });
+    price.addEventListener('blur', () => {
+      price.contentEditable = false;
+      let newPrice = parseInt(price.textContent.replace(/[^0-9]/g, ''));
+      if(isNaN(newPrice) || newPrice < 0) newPrice = 0;
+      price.textContent = newPrice.toLocaleString() + ' تومان';
+      task.price = newPrice;
+      saveTasks();
+      renderTasks();
+    });
+    price.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter') {
+        e.preventDefault();
+        price.blur();
+      }
+    });
+
+    header.appendChild(title);
+    header.appendChild(price);
+    taskDiv.appendChild(header);
+
+    // دکمه‌ها: حذف و تغییر وضعیت
+    const btns = document.createElement('div');
+    btns.className = 'task-buttons';
+
+    // حذف
+    const deleteBtn = document.createElement('button');
+    deleteBtn.title = 'حذف پروژه';
+    deleteBtn.innerHTML = '🗑️';
+    deleteBtn.addEventListener('click', () => {
+      if(confirm('آیا از حذف این پروژه مطمئن هستید؟')) {
+        tasks = tasks.filter(t => t.id !== task.id);
+        saveTasks();
+        renderTasks();
+      }
+    });
+    btns.appendChild(deleteBtn);
+
+    // وضعیت (select)
+    const statusSelect = document.createElement('select');
+    statusSelect.className = 'status-select';
+    statusSelect.title = 'تغییر وضعیت پروژه';
+    ['todo', 'inprogress', 'done'].forEach(status => {
+      const opt = document.createElement('option');
+      opt.value = status;
+      opt.textContent = 
+        status === 'todo' ? ' لیست پروژه ها' :
+        status === 'inprogress' ? 'در حال انجام' : 'تحویل داده شده';
+      if(task.status === status) opt.selected = true;
+      statusSelect.appendChild(opt);
+    });
+    statusSelect.addEventListener('change', () => {
+      task.status = statusSelect.value;
+      saveTasks();
+      renderTasks();
+    });
+    btns.appendChild(statusSelect);
+
+    // اولویت (select)
+    const prioritySelect = document.createElement('select');
+    prioritySelect.className = 'status-select';
+    prioritySelect.title = 'تغییر اولویت پروژه';
+    ['low', 'medium', 'high'].forEach(pri => {
+      const opt = document.createElement('option');
+      opt.value = pri;
+      opt.textContent = 
+        pri === 'low' ? 'کم' : pri === 'medium' ? 'متوسط' : 'زیاد';
+      if(task.priority === pri) opt.selected = true;
+      prioritySelect.appendChild(opt);
+    });
+    prioritySelect.addEventListener('change', () => {
+      task.priority = prioritySelect.value;
+      saveTasks();
+      renderTasks();
+    });
+    btns.appendChild(prioritySelect);
+
+    taskDiv.appendChild(btns);
+
+    // Drag events
+    taskDiv.addEventListener('dragstart', e => {
+      taskDiv.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', task.id);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    taskDiv.addEventListener('dragend', () => {
+      taskDiv.classList.remove('dragging');
+    });
+
+    return taskDiv;
+  }
+
+  // رندر همه تسک‌ها با فیلتر
+  function renderTasks() {
+    todoColumn.innerHTML = '<h3> لیست پروژه ها</h3>';
+    inprogressColumn.innerHTML = '<h3>در حال انجام</h3>';
+    doneColumn.innerHTML = '<h3>تحویل داده شده</h3>';
+
+    const statusFilter = filterStatus.value;
+    const priorityFilter = filterPriority.value;
+    const searchTerm = searchBox.value.trim().toLowerCase();
+
+    let filteredTasks = tasks.filter(task => {
+      let statusOk = statusFilter === 'all' || task.status === statusFilter;
+      let priorityOk = priorityFilter === 'all' || task.priority === priorityFilter;
+      let searchOk = task.title.toLowerCase().includes(searchTerm);
+      return statusOk && priorityOk && searchOk;
+    });
+
+    filteredTasks.forEach(task => {
+      const taskElem = createTaskElement(task);
+      if(task.status === 'todo') todoColumn.appendChild(taskElem);
+      else if(task.status === 'inprogress') inprogressColumn.appendChild(taskElem);
+      else if(task.status === 'done') doneColumn.appendChild(taskElem);
+    });
+
+    updateStats(filteredTasks);
+  }
+
+  // آمار
+  function updateStats(filtered) {
+    totalCount.textContent = filtered.length;
+
+    const countByStatus = {todo:0, inprogress:0, done:0};
+    let totalPriceSum = 0;
+
+    filtered.forEach(task => {
+      countByStatus[task.status]++;
+      totalPriceSum += task.price;
+    });
+
+    countTodo.textContent = countByStatus.todo;
+    countInProgress.textContent = countByStatus.inprogress;
+    countDone.textContent = countByStatus.done;
+    totalPrice.textContent = totalPriceSum.toLocaleString();
+  }
+
+  // اضافه کردن پروژه جدید
+  addTaskForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const title = taskTitleInput.value.trim();
+    const priority = taskPrioritySelect.value;
+    const price = parseInt(taskPriceInput.value) || 0;
+    const status = taskStatusSelect.value;
+
+    if(!title) {
+      alert('عنوان پروژه را وارد کنید.');
+      return;
+    }
+    if(!priority) {
+      alert('اولویت پروژه را انتخاب کنید.');
+      return;
+    }
+    if(!status) {
+      alert('وضعیت پروژه را انتخاب کنید.');
+      return;
+    }
+
+    const newTask = {
+      id: Date.now().toString(),
+      title,
+      priority,
+      price,
+      status
+    };
+    tasks.push(newTask);
+    saveTasks();
+    renderTasks();
+
+    addTaskForm.reset();
+  });
+
+  // فیلترها و جستجو
+  [filterStatus, filterPriority, searchBox].forEach(input => {
+    input.addEventListener('input', renderTasks);
+  });
+
+  // Drag & Drop ستون‌ها
+  [todoColumn, inprogressColumn, doneColumn].forEach(column => {
+    column.addEventListener('dragover', e => {
+      e.preventDefault();
+      const draggingTask = document.querySelector('.dragging');
+      const afterElement = getDragAfterElement(column, e.clientY);
+      if(afterElement == null) {
+        column.appendChild(draggingTask);
+      } else {
+        column.insertBefore(draggingTask, afterElement);
+      }
+    });
+
+    column.addEventListener('drop', e => {
+      e.preventDefault();
+      const draggingTask = document.querySelector('.dragging');
+      if(!draggingTask) return;
+
+      // به‌روزرسانی وضعیت
+      const taskId = draggingTask.dataset.id;
+      const task = tasks.find(t => t.id === taskId);
+      if(!task) return;
+
+      let newStatus = '';
+      if(column.id === 'todoColumn') newStatus = 'todo';
+      else if(column.id === 'inprogressColumn') newStatus = 'inprogress';
+      else if(column.id === 'doneColumn') newStatus = 'done';
+
+      task.status = newStatus;
+      saveTasks();
+      renderTasks();
+    });
+  });
+
+  // گرفتن عنصر زیر نشانگر در Drag
+  function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.task:not(.dragging)')];
+
+    return draggableElements.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height/2;
+      if(offset < 0 && offset > closest.offset) {
+        return {offset: offset, element: child};
+      } else {
+        return closest;
+      }
+    }, {offset: Number.NEGATIVE_INFINITY}).element;
+  }
+
+  // بارگذاری اولیه
+  renderTasks();
+
+</script>
+
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>مدیریت مشتری‌ها - با انیمیشن و صدا</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Vazir&display=swap');
+    body {
+      background-color: #121212;
+      font-family: 'Vazir', sans-serif;
+      color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: 700;
+      font-size: 2.2rem;
+      color: #5a5af3;
+      text-shadow: 0 0 8px #5a5af3aa;
+    }
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 800px;
+      margin: 0 auto 25px auto;
+      gap: 15px;
+    }
+    .controls input,
+    .controls select {
+      flex: 1;
+      max-width: 250px;
+      padding: 12px 15px;
+      border-radius: 12px;
+      border: none;
+      background: #1f1f1f;
+      color: #ddd;
+      font-size: 15px;
+      transition: background-color 0.3s ease;
+    }
+    .controls input::placeholder {
+      color: #888;
+    }
+    .controls input:focus,
+    .controls select:focus {
+      outline: none;
+      background: #3535ff22;
+      box-shadow: 0 0 8px #5a5af3aa;
+      color: #fff;
+    }
+    #soundToggle {
+      flex: none;
+      background: #5a5af3;
+      border-radius: 12px;
+      padding: 10px 16px;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: 0 0 15px #5a5af3bb;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    #soundToggle:hover {
+      background: #7a7aff;
+      transform: scale(1.05);
+    }
+    #customerForm {
+      max-width: 800px;
+      margin: 0 auto 30px auto;
+      background: linear-gradient(145deg, #1e1e1e, #222222);
+      padding: 20px 25px;
+      border-radius: 20px;
+      box-shadow:
+        6px 6px 12px #151515,
+        -6px -6px 12px #2a2a2a;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+    }
+    #customerForm input,
+    #customerForm select,
+    #customerForm textarea {
+      background: #1f1f1f;
+      color: #eee;
+      border-radius: 15px;
+      border: none;
+      padding: 14px 18px;
+      font-size: 16px;
+      flex: 1 1 220px;
+      min-width: 220px;
+      transition: box-shadow 0.3s ease;
+      resize: none;
+    }
+    #customerForm input::placeholder,
+    #customerForm textarea::placeholder {
+      color: #888;
+    }
+    #customerForm input:focus,
+    #customerForm select:focus,
+    #customerForm textarea:focus {
+      outline: none;
+      box-shadow: 0 0 10px #5a5af3cc;
+      background: #2a2aff11;
+      color: #fff;
+    }
+    #customerForm textarea {
+      height: 60px;
+    }
+    #customerForm button {
+      background: #5a5af3;
+      color: white;
+      font-weight: 700;
+      padding: 14px 30px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      font-size: 17px;
+      flex: 1 1 120px;
+      max-width: 150px;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 0 20px #5a5af3bb;
+    }
+    #customerForm button:hover {
+      background: #7a7aff;
+      transform: scale(1.05);
+      box-shadow: 0 0 30px #7a7affdd;
+    }
+    #customerList {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0;
+      list-style: none;
+    }
+    .card {
+      background: linear-gradient(145deg, #1a1a1a, #1c1c1c);
+      margin-bottom: 20px;
+      padding: 20px 25px;
+      border-radius: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      box-shadow:
+        5px 5px 12px #151515,
+        -5px -5px 12px #2a2a2a;
+      cursor: default;
+      animation: fadeInUp 0.45s ease forwards;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
+    }
+    .card:hover {
+      box-shadow:
+        10px 10px 25px #151515bb,
+        -10px -10px 25px #2a2a2abb;
+      transform: scale(1.03);
+      z-index: 10;
+    }
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(25px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .info {
+      line-height: 1.6;
+      max-width: 70%;
+      user-select: text;
+    }
+    .info strong {
+      font-size: 1.4rem;
+      color: #8a8aff;
+      text-shadow: 0 0 10px #5a5af3cc;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .info span {
+      display: block;
+      font-size: 0.9rem;
+      color: #bbb;
+      margin: 3px 0;
+    }
+    .tags {
+      font-size: 0.8rem;
+      margin-top: 8px;
+      font-weight: 700;
+      color: #5a5af3cc;
+    }
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex-shrink: 0;
+      margin-left: 20px;
+    }
+    .actions button {
+      background: #444;
+      padding: 10px 14px;
+      font-size: 16px;
+      border-radius: 12px;
+      color: #ddd;
+      cursor: pointer;
+      border: none;
+      transition: background 0.3s ease, transform 0.15s ease;
+      box-shadow: 0 0 5px transparent;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .actions button.edit {
+      background-color: #3498db;
+      box-shadow: 0 0 12px #3498dbaa;
+    }
+    .actions button.delete {
+      background-color: #e74c3c;
+      box-shadow: 0 0 12px #e74c3caa;
+    }
+    .actions button:hover {
+      transform: scale(1.12);
+      box-shadow: 0 0 18px #5a5af3ff;
+      color: white;
+    }
+    /* Slide out animation for deleting card */
+    @keyframes slideOutLeft {
+      0% {
+        opacity: 1;
+        transform: translateX(0);
+        height: 100%;
+        margin-bottom: 20px;
+      }
+      100% {
+        opacity: 0;
+        transform: translateX(-150%);
+        height: 0;
+        margin-bottom: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h2>مدیریت مشتری‌ها </h2>
+  <div class="controls">
+    <input type="text" id="searchInput" placeholder="جستجوی مشتری..." autocomplete="off" />
+    <select id="sortSelect" aria-label="مرتب‌سازی مشتری‌ها">
+      <option value="date">مرتب‌سازی بر اساس تاریخ</option>
+      <option value="name">مرتب‌سازی بر اساس نام</option>
+      <option value="tag">مرتب‌سازی بر اساس تگ</option>
+    </select>
+    <button id="soundToggle" aria-pressed="true" title="روشن/خاموش کردن صدا">🔊 صدا روشن</button>
+  </div>
+  <form id="customerForm" autocomplete="off" aria-label="فرم ثبت مشتری">
+    <input type="text" id="name" placeholder="نام مشتری" required aria-required="true" />
+    <input type="text" id="insta" placeholder="آیدی اینستاگرام" />
+    <input type="text" id="telegram" placeholder="آیدی تلگرام" />
+    <textarea id="note" placeholder="یادداشت"></textarea>
+    <select id="tag" aria-label="انتخاب تگ مشتری">
+      <option value="عادی">عادی</option>
+      <option value="ویژه">ویژه</option>
+      <option value="در حال همکاری">در حال همکاری</option>
+    </select>
+    <button type="submit" aria-label="ذخیره مشتری">ذخیره مشتری</button>
+  </form>
+  <ul id="customerList" aria-live="polite" aria-relevant="additions removals"></ul>
+
+  <script>
+    // صداها
+    const soundAdd = new Audio('https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg');
+    const soundDelete = new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg');
+    const soundEdit = new Audio('https://actions.google.com/sounds/v1/cartoon/pop.ogg');
+
+    let soundEnabled = true;
+    const soundToggle = document.getElementById('soundToggle');
+    soundToggle.onclick = () => {
+      soundEnabled = !soundEnabled;
+      soundToggle.textContent = soundEnabled ? '🔊 صدا روشن' : '🔇 صدا خاموش';
+      soundToggle.setAttribute('aria-pressed', soundEnabled);
+    };
+
+    let customers = JSON.parse(localStorage.getItem('customers')) || [];
+    let editingIndex = -1;
+
+    function saveCustomers() {
+      localStorage.setItem('customers', JSON.stringify(customers));
+    }
+
+    function playSound(sound) {
+      if (!soundEnabled) return;
+      sound.currentTime = 0;
+      sound.play();
+    }
+
+    function renderCustomers() {
+      const list = document.getElementById('customerList');
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const sort = document.getElementById('sortSelect').value;
+
+      let filtered = [...customers];
+      if (search) {
+        filtered = filtered.filter(c =>
+          c.name.toLowerCase().includes(search) ||
+          c.insta.toLowerCase().includes(search) ||
+          c.telegram.toLowerCase().includes(search) ||
+          c.note.toLowerCase().includes(search) ||
+          c.tag.toLowerCase().includes(search)
+        );
+      }
+      if (sort === 'name') {
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+      } else if (sort === 'tag') {
+        filtered.sort((a, b) => a.tag.localeCompare(b.tag));
+      } else {
+        filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+      }
+
+      list.innerHTML = '';
+      filtered.forEach((c, i) => {
+        const li = document.createElement('li');
+        li.className = 'card';
+        li.setAttribute('tabindex', '0');
+        li.innerHTML = `
+          <div class="info">
+            <strong>${escapeHTML(c.name)}</strong>
+            <span>📸 اینستا: ${escapeHTML(c.insta)}</span>
+            <span>💬 تلگرام: ${escapeHTML(c.telegram)}</span>
+            <span class="tags">🏷 ${escapeHTML(c.tag)} | 🗓 ${escapeHTML(c.date)}</span>
+            <span>${c.note ? '📝 ' + escapeHTML(c.note) : ''}</span>
+          </div>
+          <div class="actions">
+            <button class="edit" aria-label="ویرایش مشتری ${escapeHTML(c.name)}">✏️</button>
+            <button class="delete" aria-label="حذف مشتری ${escapeHTML(c.name)}">❌</button>
+          </div>
+        `;
+        // حذف با انیمیشن و صدا
+        li.querySelector('.delete').onclick = () => {
+          if (confirm(`آیا از حذف مشتری "${c.name}" مطمئن هستید؟`)) {
+            li.style.animation = 'slideOutLeft 0.5s forwards';
+            playSound(soundDelete);
+            setTimeout(() => {
+              customers.splice(i, 1);
+              saveCustomers();
+              renderCustomers();
+            }, 500);
+          }
+        };
+        // ویرایش و صدا
+        li.querySelector('.edit').onclick = () => {
+          document.getElementById('name').value = c.name;
+          document.getElementById('insta').value = c.insta;
+          document.getElementById('telegram').value = c.telegram;
+          document.getElementById('note').value = c.note;
+          document.getElementById('tag').value = c.tag;
+          editingIndex = i;
+          playSound(soundEdit);
+          document.getElementById('name').focus();
+        };
+        list.appendChild(li);
+      });
+    }
+
+    // تابع برای جلوگیری از تزریق کد مخرب در متن‌ها
+    function escapeHTML(text) {
+      if (!text) return '';
+      return text.replace(/[&<>"']/g, function (m) {
+        return ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        })[m];
+      });
+    }
+
+    document.getElementById('customerForm').onsubmit = e => {
+      e.preventDefault();
+      const nameVal = document.getElementById('name').value.trim();
+      const instaVal = document.getElementById('insta').value.trim();
+      const telegramVal = document.getElementById('telegram').value.trim();
+      const noteVal = document.getElementById('note').value.trim();
+      const tagVal = document.getElementById('tag').value;
+      const dateVal = new Date().toLocaleDateString('fa-IR');
+
+      if (!nameVal) {
+        alert('لطفاً نام مشتری را وارد کنید.');
+        return;
+      }
+
+      if (editingIndex > -1) {
+        customers[editingIndex] = {
+          name: nameVal,
+          insta: instaVal,
+          telegram: telegramVal,
+          note: noteVal,
+          tag: tagVal,
+          date: customers[editingIndex].date
+        };
+        editingIndex = -1;
+      } else {
+        customers.push({
+          name: nameVal,
+          insta: instaVal,
+          telegram: telegramVal,
+          note: noteVal,
+          tag: tagVal,
+          date: dateVal
+        });
+      }
+      saveCustomers();
+      renderCustomers();
+      e.target.reset();
+      playSound(soundAdd);
+    };
+
+    document.getElementById('searchInput').addEventListener('input', renderCustomers);
+    document.getElementById('sortSelect').addEventListener('change', renderCustomers);
+
+    // نمایش اولیه
+    renderCustomers();
+  </script>
+<h2 style="margin-top:40px; text-align:center;">مدیریت تراکنش‌ها</h2>
+
+<form id="transactionForm" style="max-width:800px; margin: 10px auto 30px auto; background: linear-gradient(145deg, #1a1a1a, #1c1c1c); padding: 20px; border-radius: 16px; box-shadow: 0 8px 16px rgba(0,0,0,0.4); color: #eee; font-family: 'Vazir', sans-serif;">
+  <div style="display:flex; gap:12px; flex-wrap: wrap; align-items: center;">
+    <input type="text" id="transactionCustomer" placeholder="نام مشتری (دقیق بنویس)" required
+      style="flex:1; padding:10px; border-radius: 10px; border:none; background:#1e1e1e; color:#eee; font-size:14px;">
+    <select id="transactionType" required
+      style="padding:10px; border-radius:10px; border:none; background:#1e1e1e; color:#eee; font-size:14px; width:140px;">
+      <option value="">نوع تراکنش</option>
+      <option value="پرداخت">پرداخت</option>
+      <option value="بدهی">بدهی</option>
+    </select>
+    <input type="number" id="transactionAmount" placeholder="مبلغ (تومان)" min="1" required
+      style="width:130px; padding:10px; border-radius: 10px; border:none; background:#1e1e1e; color:#eee; font-size:14px;">
+    <input type="date" id="transactionDate" required
+      style="padding:10px; border-radius: 10px; border:none; background:#1e1e1e; color:#eee; font-size:14px; width:160px;">
+    <button type="submit"
+      style="background:#5a5af3; color:#fff; border:none; padding: 12px 20px; border-radius: 10px; cursor:pointer; font-weight:bold; font-size:14px; transition: background 0.3s ease;">
+      ثبت تراکنش
+    </button>
+  </div>
+</form>
+
+<ul id="transactionList" style="max-width:800px; margin:auto; list-style:none; padding:0; font-family: 'Vazir', sans-serif;">
+  <!-- تراکنش‌ها اینجا رندر میشن -->
+</ul>
+
+<script>
+  // بارگذاری و ذخیره تراکنش‌ها
+  let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
+  // صدای کلیک دکمه ثبت تراکنش
+  const clickSound = new Audio('https://actions.google.com/sounds/v1/ui/click.ogg');
+
+  function saveTransactions() {
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+  }
+
+  function renderTransactions() {
+    const list = document.getElementById('transactionList');
+    list.innerHTML = '';
+    if (transactions.length === 0) {
+      list.innerHTML = '<li style="text-align:center; color:#777; padding: 20px;">هیچ تراکنشی ثبت نشده</li>';
+      return;
+    }
+
+    transactions.forEach((t, i) => {
+      const li = document.createElement('li');
+      li.style.cssText = `
+        background: linear-gradient(145deg, #222, #1c1c1c);
+        margin-bottom: 12px;
+        padding: 14px 20px;
+        border-radius: 16px;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+        color: #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+        animation: fadeIn 0.3s ease forwards;
+        cursor: default;
+      `;
+
+      // رنگ نوع تراکنش
+      let typeColor = t.type === 'پرداخت' ? '#4CAF50' : '#E74C3C';
+
+      li.innerHTML = `
+        <div>
+          <strong style="font-size:16px;">${t.customer}</strong> 
+          <span style="color:${typeColor}; font-weight:bold; margin-right:10px;">[${t.type}]</span>
+          <span>${t.amount.toLocaleString('fa-IR')} تومان</span>
+          <div style="color:#bbb; font-size:13px; margin-top:4px;">${new Date(t.date).toLocaleDateString('fa-IR')}</div>
+        </div>
+        <button data-index="${i}" title="حذف تراکنش" style="
+          background:#e74c3c; border:none; border-radius:12px; color:#fff; font-weight:bold; 
+          padding:6px 10px; cursor:pointer; font-size:13px; transition: background 0.3s ease;">حذف</button>
+      `;
+
+      li.querySelector('button').onclick = e => {
+        const index = +e.target.getAttribute('data-index');
+        if (confirm('آیا مطمئنید می‌خواهید این تراکنش حذف شود؟')) {
+          transactions.splice(index, 1);
+          saveTransactions();
+          renderTransactions();
+        }
+      };
+
+      list.appendChild(li);
+    });
+  }
+
+  document.getElementById('transactionForm').onsubmit = e => {
+    e.preventDefault();
+    const customer = document.getElementById('transactionCustomer').value.trim();
+    const type = document.getElementById('transactionType').value;
+    const amount = parseInt(document.getElementById('transactionAmount').value);
+    const date = document.getElementById('transactionDate').value;
+
+    // اعتبارسنجی نام مشتری در لیست مشتری‌ها (localStorage یا آرایه مشتری‌ها)
+    const customers = JSON.parse(localStorage.getItem('customers')) || [];
+    if (!customers.some(c => c.name === customer)) {
+      alert('مشتری وارد شده در لیست مشتری‌ها موجود نیست. لطفاً نام دقیق مشتری را وارد کنید.');
+      return;
+    }
+
+    if (!type || !amount || !date) {
+      alert('لطفا همه فیلدها را کامل کنید.');
+      return;
+    }
+
+    // صدای کلیک ثبت تراکنش
+    clickSound.play();
+
+    transactions.push({ customer, type, amount, date });
+    saveTransactions();
+    renderTransactions();
+
+    e.target.reset();
+  };
+
+  // مقدار پیش فرض تاریخ امروز
+  document.getElementById('transactionDate').valueAsDate = new Date();
+
+  renderTransactions();
+
+  // انیمیشن کلید
+  const style = document.createElement('style');
+  style.innerHTML = `
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+    button:hover {
+      filter: brightness(1.15);
+      transform: scale(1.05);
+      transition: all 0.2s ease;
+    }
+  `;
+  document.head.appendChild(style);
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
